@@ -6,21 +6,21 @@ import { X } from "lucide-react";
 import Image from "next/image";
 
 const apostles = [
-  { src: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&auto=format&fit=crop", name: "Aps. Eric Nyamekye" },
-  { src: "https://images.unsplash.com/photo-1610652492500-ded49ceeb378?w=800&auto=format&fit=crop", name: "Aps. Samuel Gakpetor" },
-  { src: "https://images.unsplash.com/photo-1619365734050-cb5e64a42d43?w=800&auto=format&fit=crop", name: "Aps. A.N.Y. Kumi-Larbi" },
-  { src: "https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?w=800&auto=format&fit=crop", name: "Aps. E.A. Bekoe" },
-  { src: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=800&auto=format&fit=crop", name: "Aps. L. Otu-Nyarko" },
-  { src: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=800&auto=format&fit=crop", name: "Aps. Amos Jimmy Markin" },
-  { src: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=800&auto=format&fit=crop", name: "Aps. Ousmane Zabre" },
-  { src: "https://images.unsplash.com/photo-1556157382-97eda2d62296?w=800&auto=format&fit=crop", name: "Aps. Yaw Adjei-Kwarteng" },
-  { src: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=800&auto=format&fit=crop", name: "Aps. S. Osei Asante" },
-  { src: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=800&auto=format&fit=crop", name: "Aps. I.N.K. Djani" },
-  { src: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=800&auto=format&fit=crop", name: "Aps. Sylvester Arhin" },
-  { src: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=800&auto=format&fit=crop", name: "Aps. Dr. D.O. Walker" },
-  { src: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=800&auto=format&fit=crop", name: "Aps. Christian Tsekpoe" },
-  { src: "https://images.unsplash.com/photo-1513956589380-bad6acb9b9d4?w=800&auto=format&fit=crop", name: "Aps. Lare Bako" },
-  { src: "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=800&auto=format&fit=crop", name: "Aps. Dr. D.K. Nuekpe" }
+  { src: "/executive council members/1Chairman.jpg", name: "Apostle Eric Nyamekye (Chairman)" },
+  { src: "/executive council members/2GS.jpg", name: "Apostle Samuel Gyau Obuobi (General Secretary)" },
+  { src: "/executive council members/3IMD.jpg", name: "Apostle Emmanuel Agyemang Bekoe (Missions Director)" },
+  { src: "/executive council members/4Apostle Kumi.jpg", name: "Apostle Alexander N.Y. Kumi-Larbi" },
+  { src: "/executive council members/5Raj.jpg", name: "Apostle Sundaram James Raj" },
+  { src: "/executive council members/6Aps Jimmy.jpg", name: "Apostle Dr. Amos Jimmy Markin" },
+  { src: "/executive council members/7Aps Denteh.jpg", name: "Apostle Vincent Anane Denteh" },
+  { src: "/executive council members/Aps Swanzy.jpg", name: "Apostle Abraham Swanzy" },
+  { src: "/executive council members/Aps Kwafo.jpg", name: "Apostle Emmanuel Agyei Kwafo" },
+  { src: "/executive council members/Aps.Nyansah.jpg", name: "Apostle Dr. David Nyansah Hayfron" },
+  { src: "/executive council members/Aps.Lare.jpg", name: "Apostle Lare Banimpo" },
+  { src: "/executive council members/Nuekpe.jpg", name: "Apostle Dr. Dieudonne Nuekpe" },
+  { src: "/executive council members/Aps.Philip.jpg", name: "Apostle Dr. Philip Osei Korsah" },
+  { src: "/executive council members/Aps.John.jpg", name: "Apostle John Budu Kobina Tawiah" },
+  { src: "/executive council members/Aps Dzemekey.jpg", name: "Apostle Peter Dzemekey" }
 ];
 
 export function Hero() {
@@ -53,7 +53,7 @@ export function Hero() {
         style={{ height: `calc(100vh + ${scrollDistance}px)` }}
         className="bg-slate-50 text-blue-950 relative z-10"
       >
-        <div className="h-screen w-screen flex flex-col items-center justify-center p-4 md:p-8 pt-40 md:pt-48 sticky top-0 overflow-hidden">
+        <div className="h-screen w-screen flex flex-col items-center justify-center p-4 md:p-8 pt-32 md:pt-40 sticky top-0 overflow-hidden">
           <div className="relative scale-90 md:scale-100">
             <div
               className={`w-[340px] h-[340px] sm:w-[400px] sm:h-[400px] md:w-[650px] md:h-[650px] rounded-full flex items-center justify-center transition-all duration-500 ${scrollY > (scrollDistance * 0.5) ? "border-2 border-blue-100" : "border-2 border-transparent"
