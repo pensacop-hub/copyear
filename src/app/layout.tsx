@@ -30,7 +30,17 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col overflow-x-hidden">{children}</body>
+      <body className="min-h-screen flex flex-col justify-between overflow-x-hidden">
+        <main className="flex-1">{children}</main>
+
+        <footer className="bg-slate-50 border-t border-slate-100 py-6 text-center">
+          <div className="max-w-4xl mx-auto px-4">
+            <p className="text-sm text-slate-600">
+              Built by <span className="font-semibold text-slate-900">Christian Antwi</span> and <span className="font-semibold text-slate-900">Obrempong Kwabena Osei-Wusu</span> for <span className="font-bold text-blue-800">The Church of Pentecost</span>.
+            </p>
+          </div>
+        </footer>
+      </body>
     </html>
   );
 }

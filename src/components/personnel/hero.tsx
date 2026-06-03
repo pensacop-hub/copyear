@@ -6,21 +6,21 @@ import { X } from "lucide-react";
 import Image from "next/image";
 
 const apostles = [
-  { src: "/executive council members/1Chairman.jpg", name: "Apostle Eric Nyamekye (Chairman)" },
-  { src: "/executive council members/2GS.jpg", name: "Apostle Samuel Gyau Obuobi (General Secretary)" },
-  { src: "/executive council members/3IMD.jpg", name: "Apostle Emmanuel Agyemang Bekoe (Missions Director)" },
-  { src: "/executive council members/4Apostle Kumi.jpg", name: "Apostle Alexander N.Y. Kumi-Larbi" },
-  { src: "/executive council members/5Raj.jpg", name: "Apostle Sundaram James Raj" },
-  { src: "/executive council members/6Aps Jimmy.jpg", name: "Apostle Dr. Amos Jimmy Markin" },
-  { src: "/executive council members/7Aps Denteh.jpg", name: "Apostle Vincent Anane Denteh" },
-  { src: "/executive council members/Aps Swanzy.jpg", name: "Apostle Abraham Swanzy" },
-  { src: "/executive council members/Aps Kwafo.jpg", name: "Apostle Emmanuel Agyei Kwafo" },
-  { src: "/executive council members/Aps.Nyansah.jpg", name: "Apostle Dr. David Nyansah Hayfron" },
-  { src: "/executive council members/Aps.Lare.jpg", name: "Apostle Lare Banimpo" },
-  { src: "/executive council members/Nuekpe.jpg", name: "Apostle Dr. Dieudonne Nuekpe" },
-  { src: "/executive council members/Aps.Philip.jpg", name: "Apostle Dr. Philip Osei Korsah" },
-  { src: "/executive council members/Aps.John.jpg", name: "Apostle John Budu Kobina Tawiah" },
-  { src: "/executive council members/Aps Dzemekey.jpg", name: "Apostle Peter Dzemekey" }
+  { src: "/Executive Council Members/1Chairman.jpg", name: "Apostle Eric Nyamekye (Chairman)" },
+  { src: "/Executive Council Members/2GS.jpg", name: "Apostle Samuel Gyau Obuobi (General Secretary)" },
+  { src: "/Executive Council Members/3IMD.jpg", name: "Apostle Emmanuel Agyemang Bekoe (Missions Director)" },
+  { src: "/Executive Council Members/4Apostle Kumi.jpg", name: "Apostle Alexander N.Y. Kumi-Larbi" },
+  { src: "/Executive Council Members/5Raj.jpg", name: "Apostle Sundaram James Raj" },
+  { src: "/Executive Council Members/6Aps Jimmy.jpg", name: "Apostle Dr. Amos Jimmy Markin" },
+  { src: "/Executive Council Members/7Aps Denteh.jpg", name: "Apostle Vincent Anane Denteh" },
+  { src: "/Executive Council Members/Aps Swanzy.jpg", name: "Apostle Abraham Swanzy" },
+  { src: "/Executive Council Members/Aps Kwafo.jpg", name: "Apostle Emmanuel Agyei Kwafo" },
+  { src: "/Executive Council Members/Aps.Nyansah.jpg", name: "Apostle Dr. David Nyansah Hayfron" },
+  { src: "/Executive Council Members/Aps.Lare.jpg", name: "Apostle Lare Banimpo" },
+  { src: "/Executive Council Members/Nuekpe.jpg", name: "Apostle Dr. Dieudonne Nuekpe" },
+  { src: "/Executive Council Members/Aps.Philip.jpg", name: "Apostle Dr. Philip Osei Korsah" },
+  { src: "/Executive Council Members/Aps.John.jpg", name: "Apostle John Budu Kobina Tawiah" },
+  { src: "/Executive Council Members/Aps Dzemekey.jpg", name: "Apostle Peter Dzemekey" }
 ];
 
 export function Hero() {

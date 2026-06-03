@@ -19,21 +19,21 @@ import { Calendar as CalendarIcon } from "lucide-react";
 
 // --- IMAGES ---
 const ALL_MEMBERS = [
-  "/executive council members/1Chairman.jpg",
-  "/executive council members/2GS.jpg",
-  "/executive council members/3IMD.jpg",
-  "/executive council members/4Apostle Kumi.jpg",
-  "/executive council members/5Raj.jpg",
-  "/executive council members/6Aps Jimmy.jpg",
-  "/executive council members/7Aps Denteh.jpg",
-  "/executive council members/Aps Swanzy.jpg",
-  "/executive council members/Aps Kwafo.jpg",
-  "/executive council members/Aps.Nyansah.jpg",
-  "/executive council members/Aps.Lare.jpg",
-  "/executive council members/Nuekpe.jpg",
-  "/executive council members/Aps.Philip.jpg",
-  "/executive council members/Aps.John.jpg",
-  "/executive council members/Aps Dzemekey.jpg"
+  "/Executive Council Members/1Chairman.jpg",
+  "/Executive Council Members/2GS.jpg",
+  "/Executive Council Members/3IMD.jpg",
+  "/Executive Council Members/4Apostle Kumi.jpg",
+  "/Executive Council Members/5Raj.jpg",
+  "/Executive Council Members/6Aps Jimmy.jpg",
+  "/Executive Council Members/7Aps Denteh.jpg",
+  "/Executive Council Members/Aps Swanzy.jpg",
+  "/Executive Council Members/Aps Kwafo.jpg",
+  "/Executive Council Members/Aps.Nyansah.jpg",
+  "/Executive Council Members/Aps.Lare.jpg",
+  "/Executive Council Members/Nuekpe.jpg",
+  "/Executive Council Members/Aps.Philip.jpg",
+  "/Executive Council Members/Aps.John.jpg",
+  "/Executive Council Members/Aps Dzemekey.jpg"
 ];
 
 function useIsMobile() {
