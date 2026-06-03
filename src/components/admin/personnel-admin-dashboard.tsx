@@ -39,7 +39,7 @@ const editableFields: Array<{
   { key: "region", label: "Region" },
   { key: "area", label: "Area" },
   { key: "district", label: "District" },
-  { key: "districtLeader", label: "District Leader" },
+  { key: "districtLeader", label: "District Pastor" },
   { key: "phone", label: "Phone", type: "tel" },
   { key: "email", label: "Email", type: "email" },
   { key: "address", label: "Address" },
