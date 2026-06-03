@@ -111,7 +111,7 @@ export function InstallBanner() {
             </span>
           </div>
           <p className="mt-1 text-xs font-semibold leading-5 text-slate-300">
-            Add it to your device for faster access. Key pages and assets are cached so the portal can still open when the network is unavailable.
+            Add it to your device for faster access offline. Portal can still open when the network is unavailable.
           </p>
           {iosInstallText && (
             <p className="mt-2 text-xs font-bold text-yellow-200">
