@@ -7,6 +7,7 @@ import {
   ArrowRightLeft,
   CheckCircle2,
   Edit3,
+  ListOrdered,
   Loader2,
   Plus,
   RotateCcw,
@@ -16,10 +17,16 @@ import {
   Trash2,
   UserRound,
 } from "lucide-react";
-import type { CopPersonnel, CopPersonnelInput } from "@/lib/cop-personnel";
+import type {
+  CopAreaHead,
+  CopAreaHeadInput,
+  CopPersonnel,
+  CopPersonnelInput,
+} from "@/lib/cop-personnel";
 
 type PersonnelAdminDashboardProps = {
   initialPersonnel: CopPersonnel[];
+  initialAreaHeads: CopAreaHead[];
   embedded?: boolean;
 };
 
@@ -28,9 +35,9 @@ const editableFields: Array<{
   label: string;
   type?: string;
 }> = [
+  { key: "sortOrder", label: "Display Order", type: "number" },
   { key: "region", label: "Region" },
   { key: "area", label: "Area" },
-  { key: "areaLeader", label: "Area Head" },
   { key: "district", label: "District" },
   { key: "districtLeader", label: "District Leader" },
   { key: "phone", label: "Phone", type: "tel" },
@@ -47,6 +54,7 @@ function normalize(value: string) {
 
 function toInput(person: CopPersonnel): CopPersonnelInput {
   return {
+    sortOrder: person.sortOrder,
     region: person.region,
     area: person.area,
     areaLeader: person.areaLeader,
@@ -60,11 +68,36 @@ function toInput(person: CopPersonnel): CopPersonnelInput {
 
 function blankInput(): CopPersonnelInput {
   return {
+    sortOrder: 0,
     region: "",
     area: "",
     areaLeader: "",
     district: "",
     districtLeader: "",
+    phone: "",
+    email: "",
+    address: "",
+  };
+}
+
+function toAreaHeadInput(areaHead: CopAreaHead): CopAreaHeadInput {
+  return {
+    sortOrder: areaHead.sortOrder,
+    region: areaHead.region,
+    area: areaHead.area,
+    name: areaHead.name,
+    phone: areaHead.phone,
+    email: areaHead.email,
+    address: areaHead.address,
+  };
+}
+
+function blankAreaHeadInput(): CopAreaHeadInput {
+  return {
+    sortOrder: 0,
+    region: "",
+    area: "",
+    name: "",
     phone: "",
     email: "",
     address: "",
@@ -89,15 +122,23 @@ function searchValue(person: CopPersonnel) {
 
 export function PersonnelAdminDashboard({
   initialPersonnel,
+  initialAreaHeads,
   embedded = false,
 }: PersonnelAdminDashboardProps) {
   const [personnel, setPersonnel] = useState(initialPersonnel);
+  const [areaHeads, setAreaHeads] = useState(initialAreaHeads);
   const [selectedId, setSelectedId] = useState(initialPersonnel[0]?.id ?? 0);
+  const [selectedAreaHeadId, setSelectedAreaHeadId] = useState(initialAreaHeads[0]?.id ?? 0);
   const [query, setQuery] = useState("");
   const [form, setForm] = useState<CopPersonnelInput>(
     initialPersonnel[0] ? toInput(initialPersonnel[0]) : blankInput(),
   );
   const [newForm, setNewForm] = useState<CopPersonnelInput>(blankInput());
+  const [areaHeadForm, setAreaHeadForm] = useState<CopAreaHeadInput>(
+    initialAreaHeads[0] ? toAreaHeadInput(initialAreaHeads[0]) : blankAreaHeadInput(),
+  );
+  const [newAreaHeadForm, setNewAreaHeadForm] = useState<CopAreaHeadInput>(blankAreaHeadInput());
+  const [areaHeadQuery, setAreaHeadQuery] = useState("");
   const [sourceId, setSourceId] = useState(initialPersonnel[0]?.id ?? 0);
   const [targetId, setTargetId] = useState(initialPersonnel[1]?.id ?? 0);
   const [sourceQuery, setSourceQuery] = useState("");
@@ -112,6 +153,8 @@ export function PersonnelAdminDashboard({
   const [error, setError] = useState("");
   const [isSaving, startSaving] = useTransition();
   const [isCreating, startCreating] = useTransition();
+  const [isAreaHeadSaving, startAreaHeadSaving] = useTransition();
+  const [isAreaHeadCreating, startAreaHeadCreating] = useTransition();
   const [isRetiring, startRetiring] = useTransition();
   const [isTransferring, startTransfer] = useTransition();
   const [isAreaTransferring, startAreaTransfer] = useTransition();
@@ -121,22 +164,45 @@ export function PersonnelAdminDashboard({
     [personnel, selectedId],
   );
 
+  const selectedAreaHead = useMemo(
+    () => areaHeads.find((areaHead) => areaHead.id === selectedAreaHeadId) ?? areaHeads[0],
+    [areaHeads, selectedAreaHeadId],
+  );
+
   const sourcePerson = personnel.find((person) => person.id === sourceId);
   const targetPerson = personnel.find((person) => person.id === targetId);
 
   const areaOptions = useMemo(() => {
-    const areaMap = new Map<string, { area: string; areaLeader: string; region: string }>();
-    for (const person of personnel) {
-      if (!areaMap.has(person.area)) {
-        areaMap.set(person.area, {
-          area: person.area,
-          areaLeader: person.areaLeader,
-          region: person.region,
-        });
-      }
+    return areaHeads
+      .map((areaHead) => ({
+        area: areaHead.area,
+        areaLeader: areaHead.name,
+        region: areaHead.region,
+      }))
+      .sort((a, b) => a.area.localeCompare(b.area));
+  }, [areaHeads]);
+
+  const filteredAreaHeads = useMemo(() => {
+    const terms = normalize(areaHeadQuery.trim()).split(/\s+/).filter(Boolean);
+    if (terms.length === 0) {
+      return areaHeads;
     }
-    return Array.from(areaMap.values()).sort((a, b) => a.area.localeCompare(b.area));
-  }, [personnel]);
+
+    return areaHeads.filter((areaHead) => {
+      const haystack = normalize(
+        [
+          areaHead.sortOrder,
+          areaHead.region,
+          areaHead.area,
+          areaHead.name,
+          areaHead.phone,
+          areaHead.email,
+          areaHead.address,
+        ].join(" "),
+      );
+      return terms.every((term) => haystack.includes(term));
+    });
+  }, [areaHeads, areaHeadQuery]);
 
   const areaSourceOptions = useMemo(() => {
     const search = normalize(areaSourceQuery.trim());
@@ -156,9 +222,9 @@ export function PersonnelAdminDashboard({
 
   const sourceArea = areaOptions.find((area) => area.area === areaSource);
   const targetArea = areaOptions.find((area) => area.area === areaTarget);
-  const areaHeads = useMemo(
-    () => new Set(personnel.map((person) => person.areaLeader).filter(Boolean)).size,
-    [personnel],
+  const areaHeadCount = useMemo(
+    () => new Set(areaHeads.map((areaHead) => areaHead.name).filter(Boolean)).size,
+    [areaHeads],
   );
 
   const sourceOptions = useMemo(() => {
@@ -203,6 +269,44 @@ export function PersonnelAdminDashboard({
     setError("");
   }
 
+  function selectTransferPerson(kind: "source" | "target", person: CopPersonnel) {
+    const label = `${person.districtLeader} - ${person.district}, ${person.area}`;
+
+    if (kind === "source") {
+      setSourceId(person.id);
+      setSourceQuery(label);
+      return;
+    }
+
+    setTargetId(person.id);
+    setTargetQuery(label);
+  }
+
+  function selectAreaHead(areaHead: CopAreaHead) {
+    setSelectedAreaHeadId(areaHead.id);
+    setAreaHeadForm(toAreaHeadInput(areaHead));
+    setMessage("");
+    setError("");
+  }
+
+  function areaHeadNameFor(area: string, fallback = "") {
+    return areaHeads.find((areaHead) => areaHead.area === area)?.name ?? fallback;
+  }
+
+  function syncPersonnelAreaHead(area: string, name: string) {
+    setPersonnel((current) =>
+      current.map((person) =>
+        person.area === area ? { ...person, areaLeader: name } : person,
+      ),
+    );
+    setForm((current) =>
+      current.area === area ? { ...current, areaLeader: name } : current,
+    );
+    setNewForm((current) =>
+      current.area === area ? { ...current, areaLeader: name } : current,
+    );
+  }
+
   async function savePerson(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
@@ -216,7 +320,10 @@ export function PersonnelAdminDashboard({
       const response = await fetch(`/api/admin/personnel/${selectedPerson.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({
+          ...form,
+          areaLeader: areaHeadNameFor(form.area, form.areaLeader),
+        }),
       });
       const payload = await response.json();
 
@@ -244,7 +351,10 @@ export function PersonnelAdminDashboard({
       const response = await fetch("/api/admin/personnel", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newForm),
+        body: JSON.stringify({
+          ...newForm,
+          areaLeader: areaHeadNameFor(newForm.area, newForm.areaLeader),
+        }),
       });
       const payload = await response.json();
 
@@ -259,6 +369,72 @@ export function PersonnelAdminDashboard({
       setForm(toInput(created));
       setNewForm(blankInput());
       setMessage("New personnel record added");
+    });
+  }
+
+  async function saveAreaHead(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    if (!selectedAreaHead) {
+      return;
+    }
+
+    setError("");
+    setMessage("");
+
+    startAreaHeadSaving(async () => {
+      const response = await fetch(`/api/admin/area-heads/${selectedAreaHead.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(areaHeadForm),
+      });
+      const payload = await response.json();
+
+      if (!response.ok) {
+        setError(payload.error ?? "Unable to save area head.");
+        return;
+      }
+
+      const updated = payload.areaHead as CopAreaHead;
+      setAreaHeads((current) =>
+        current
+          .map((areaHead) => (areaHead.id === updated.id ? updated : areaHead))
+          .sort((a, b) => a.sortOrder - b.sortOrder || a.area.localeCompare(b.area)),
+      );
+      setSelectedAreaHeadId(updated.id);
+      setAreaHeadForm(toAreaHeadInput(updated));
+      syncPersonnelAreaHead(updated.area, updated.name);
+      setMessage("Area head saved");
+    });
+  }
+
+  async function createAreaHead(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError("");
+    setMessage("");
+
+    startAreaHeadCreating(async () => {
+      const response = await fetch("/api/admin/area-heads", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newAreaHeadForm),
+      });
+      const payload = await response.json();
+
+      if (!response.ok) {
+        setError(payload.error ?? "Unable to create area head.");
+        return;
+      }
+
+      const created = payload.areaHead as CopAreaHead;
+      setAreaHeads((current) =>
+        [...current, created].sort((a, b) => a.sortOrder - b.sortOrder || a.area.localeCompare(b.area)),
+      );
+      setSelectedAreaHeadId(created.id);
+      setAreaHeadForm(toAreaHeadInput(created));
+      setNewAreaHeadForm(blankAreaHeadInput());
+      syncPersonnelAreaHead(created.area, created.name);
+      setMessage("New area head added");
     });
   }
 
@@ -339,6 +515,8 @@ export function PersonnelAdminDashboard({
   async function runAreaTransfer() {
     setError("");
     setMessage("");
+    const beforeSource = areaHeads.find((areaHead) => areaHead.area === areaSource);
+    const beforeTarget = areaHeads.find((areaHead) => areaHead.area === areaTarget);
 
     startAreaTransfer(async () => {
       const response = await fetch("/api/admin/personnel/area-transfer", {
@@ -361,6 +539,36 @@ export function PersonnelAdminDashboard({
       setPersonnel((current) =>
         current.map((person) => changed.find((item) => item.id === person.id) ?? person),
       );
+
+      if (beforeSource && beforeTarget) {
+        setAreaHeads((current) =>
+          current.map((areaHead) => {
+            if (areaHead.id === beforeSource.id) {
+              return areaTransferMode === "switch"
+                ? {
+                    ...areaHead,
+                    name: beforeTarget.name,
+                    phone: beforeTarget.phone,
+                    email: beforeTarget.email,
+                    address: beforeTarget.address,
+                  }
+                : { ...areaHead, name: "Vacant", phone: "", email: "", address: "" };
+            }
+
+            if (areaHead.id === beforeTarget.id) {
+              return {
+                ...areaHead,
+                name: beforeSource.name,
+                phone: beforeSource.phone,
+                email: beforeSource.email,
+                address: beforeSource.address,
+              };
+            }
+
+            return areaHead;
+          }),
+        );
+      }
 
       const refreshedSelected = changed.find((person) => person.id === selectedId);
       if (refreshedSelected) {
@@ -408,7 +616,7 @@ export function PersonnelAdminDashboard({
 
         <div className="mt-6 grid gap-4 sm:grid-cols-4">
           <div className="border-l-4 border-blue-800 bg-white p-4 shadow-sm">
-            <p className="text-2xl font-black">{areaHeads}</p>
+            <p className="text-2xl font-black">{areaHeadCount}</p>
             <p className="mt-1 text-xs font-black uppercase tracking-[0.18em] text-slate-500">
               Area Heads
             </p>
@@ -438,9 +646,9 @@ export function PersonnelAdminDashboard({
         </div>
 
         <div className="mt-8 grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
-          <div className="min-w-0 bg-white shadow-sm ring-1 ring-slate-200">
+          <div className="min-w-0 overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-slate-200">
             <div className="border-b border-slate-100 p-4">
-              <div className="flex h-12 items-center gap-3 border border-slate-200 bg-slate-50 px-4">
+              <div className="flex h-12 items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4">
                 <Search className="h-5 w-5 flex-none text-blue-800" />
                 <input
                   value={query}
@@ -485,7 +693,7 @@ export function PersonnelAdminDashboard({
           </div>
 
           <div className="space-y-6">
-            <form onSubmit={savePerson} className="bg-white p-5 shadow-sm ring-1 ring-slate-200">
+            <form onSubmit={savePerson} className="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
               <div className="mb-5 flex items-center justify-between gap-4 border-b border-slate-100 pb-4">
                 <div>
                   <p className="text-xs font-black uppercase tracking-[0.2em] text-blue-800">
@@ -496,6 +704,12 @@ export function PersonnelAdminDashboard({
                 <Edit3 className="h-5 w-5 text-yellow-600" />
               </div>
 
+              <datalist id="admin-area-options">
+                {areaOptions.map((area) => (
+                  <option key={area.area} value={area.area} />
+                ))}
+              </datalist>
+
               <div className="grid gap-4 sm:grid-cols-2">
                 {editableFields.map((field) => (
                   <label key={field.key} className={field.key === "address" ? "sm:col-span-2" : ""}>
@@ -505,13 +719,29 @@ export function PersonnelAdminDashboard({
                     <input
                       type={field.type ?? "text"}
                       value={form[field.key]}
-                      onChange={(event) =>
-                        setForm((current) => ({ ...current, [field.key]: event.target.value }))
-                      }
-                      className="mt-2 h-11 w-full border border-slate-200 bg-slate-50 px-3 text-sm font-bold text-slate-950 outline-none transition focus:border-blue-400 focus:bg-white"
+                      list={field.key === "area" ? "admin-area-options" : undefined}
+                      onChange={(event) => {
+                        const value = field.key === "sortOrder" ? Number(event.target.value) : event.target.value;
+                        setForm((current) => {
+                          const next = { ...current, [field.key]: value };
+                          if (field.key === "area") {
+                            next.areaLeader = areaHeadNameFor(event.target.value, current.areaLeader);
+                          }
+                          return next;
+                        });
+                      }}
+                      className="mt-2 h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-3 text-sm font-bold text-slate-950 outline-none transition focus:border-blue-400 focus:bg-white"
                     />
                   </label>
                 ))}
+                <div className="rounded-2xl border border-blue-100 bg-blue-50 px-3 py-3">
+                  <p className="text-xs font-black uppercase tracking-[0.16em] text-blue-800">
+                    Current Area Head
+                  </p>
+                  <p className="mt-1 text-sm font-black text-slate-950">
+                    {areaHeadNameFor(form.area, form.areaLeader) || "No area head mapped"}
+                  </p>
+                </div>
               </div>
 
               <div className="mt-5 flex items-center justify-between gap-3">
@@ -519,7 +749,7 @@ export function PersonnelAdminDashboard({
                   <button
                     type="button"
                     onClick={() => selectedPerson && setForm(toInput(selectedPerson))}
-                    className="inline-flex h-11 items-center gap-2 border border-slate-200 bg-white px-4 text-sm font-black text-slate-600 transition hover:text-blue-800"
+                    className="inline-flex h-11 items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 text-sm font-black text-slate-600 transition hover:text-blue-800"
                   >
                     <RotateCcw className="h-4 w-4" />
                     Reset
@@ -528,7 +758,7 @@ export function PersonnelAdminDashboard({
                     type="button"
                     onClick={retireSelectedPerson}
                     disabled={isRetiring || !selectedPerson}
-                    className="inline-flex h-11 items-center gap-2 border border-red-100 bg-red-50 px-4 text-sm font-black text-red-700 transition hover:bg-red-100 disabled:opacity-60"
+                    className="inline-flex h-11 items-center gap-2 rounded-2xl border border-red-100 bg-red-50 px-4 text-sm font-black text-red-700 transition hover:bg-red-100 disabled:opacity-60"
                   >
                     {isRetiring ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
                     Retired
@@ -537,7 +767,7 @@ export function PersonnelAdminDashboard({
                 <button
                   type="submit"
                   disabled={isSaving}
-                  className="inline-flex h-11 items-center gap-2 bg-blue-800 px-5 text-sm font-black text-white transition hover:bg-blue-950 disabled:opacity-60"
+                  className="inline-flex h-11 items-center gap-2 rounded-2xl bg-blue-800 px-5 text-sm font-black text-white transition hover:bg-blue-950 disabled:opacity-60"
                 >
                   {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                   Save
@@ -545,7 +775,7 @@ export function PersonnelAdminDashboard({
               </div>
             </form>
 
-            <form onSubmit={createPerson} className="bg-white p-5 shadow-sm ring-1 ring-slate-200">
+            <form onSubmit={createPerson} className="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
               <div className="mb-5 flex items-center justify-between gap-4 border-b border-slate-100 pb-4">
                 <div>
                   <p className="text-xs font-black uppercase tracking-[0.2em] text-blue-800">
@@ -565,20 +795,36 @@ export function PersonnelAdminDashboard({
                     <input
                       type={field.type ?? "text"}
                       value={newForm[field.key]}
-                      onChange={(event) =>
-                        setNewForm((current) => ({ ...current, [field.key]: event.target.value }))
-                      }
-                      className="mt-2 h-11 w-full border border-slate-200 bg-slate-50 px-3 text-sm font-bold text-slate-950 outline-none transition focus:border-blue-400 focus:bg-white"
+                      list={field.key === "area" ? "admin-area-options" : undefined}
+                      onChange={(event) => {
+                        const value = field.key === "sortOrder" ? Number(event.target.value) : event.target.value;
+                        setNewForm((current) => {
+                          const next = { ...current, [field.key]: value };
+                          if (field.key === "area") {
+                            next.areaLeader = areaHeadNameFor(event.target.value, current.areaLeader);
+                          }
+                          return next;
+                        });
+                      }}
+                      className="mt-2 h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-3 text-sm font-bold text-slate-950 outline-none transition focus:border-blue-400 focus:bg-white"
                     />
                   </label>
                 ))}
+                <div className="rounded-2xl border border-blue-100 bg-blue-50 px-3 py-3">
+                  <p className="text-xs font-black uppercase tracking-[0.16em] text-blue-800">
+                    Current Area Head
+                  </p>
+                  <p className="mt-1 text-sm font-black text-slate-950">
+                    {areaHeadNameFor(newForm.area, newForm.areaLeader) || "Select an area"}
+                  </p>
+                </div>
               </div>
 
               <div className="mt-5 flex justify-end">
                 <button
                   type="submit"
                   disabled={isCreating}
-                  className="inline-flex h-11 items-center gap-2 bg-slate-950 px-5 text-sm font-black text-white transition hover:bg-blue-950 disabled:opacity-60"
+                  className="inline-flex h-11 items-center gap-2 rounded-2xl bg-slate-950 px-5 text-sm font-black text-white transition hover:bg-blue-950 disabled:opacity-60"
                 >
                   {isCreating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
                   Add Personnel
@@ -586,7 +832,138 @@ export function PersonnelAdminDashboard({
               </div>
             </form>
 
-            <div className="bg-white p-5 shadow-sm ring-1 ring-slate-200">
+            <div className="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
+              <div className="mb-5 flex items-center justify-between gap-4 border-b border-slate-100 pb-4">
+                <div>
+                  <p className="text-xs font-black uppercase tracking-[0.2em] text-blue-800">
+                    Area Heads
+                  </p>
+                  <h2 className="mt-1 text-xl font-black">Edit Area Head Details</h2>
+                </div>
+                <ListOrdered className="h-5 w-5 text-yellow-600" />
+              </div>
+
+              <div className="grid gap-5 lg:grid-cols-[0.86fr_1.14fr]">
+                <div className="min-w-0 overflow-hidden rounded-3xl border border-slate-200">
+                  <div className="border-b border-slate-100 p-3">
+                    <div className="flex h-11 items-center gap-2 rounded-2xl bg-slate-50 px-3 ring-1 ring-slate-200">
+                      <Search className="h-4 w-4 flex-none text-blue-800" />
+                      <input
+                        value={areaHeadQuery}
+                        onChange={(event) => setAreaHeadQuery(event.target.value)}
+                        placeholder="Search area heads"
+                        className="h-full w-full bg-transparent text-sm font-bold outline-none"
+                      />
+                    </div>
+                  </div>
+                  <div className="max-h-72 overflow-auto">
+                    {filteredAreaHeads.map((areaHead) => (
+                      <button
+                        type="button"
+                        key={areaHead.id}
+                        onClick={() => selectAreaHead(areaHead)}
+                        className={`block w-full border-b border-slate-100 px-4 py-3 text-left transition hover:bg-blue-50 ${areaHead.id === selectedAreaHeadId ? "bg-yellow-50" : "bg-white"}`}
+                      >
+                        <span className="block text-sm font-black text-slate-950">
+                          {areaHead.name}
+                        </span>
+                        <span className="mt-1 block text-xs font-bold text-slate-500">
+                          {areaHead.area} Area, {areaHead.region}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="grid gap-5">
+                  <form onSubmit={saveAreaHead} className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
+                    <p className="mb-4 text-xs font-black uppercase tracking-[0.18em] text-blue-800">
+                      Selected Area Head
+                    </p>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      {([
+                        ["sortOrder", "Display Order", "number"],
+                        ["region", "Region", "text"],
+                        ["area", "Area", "text"],
+                        ["name", "Area Head", "text"],
+                        ["phone", "Phone", "tel"],
+                        ["email", "Email", "email"],
+                        ["address", "Address", "text"],
+                      ] as const).map(([key, label, type]) => (
+                        <label key={key} className={key === "address" ? "sm:col-span-2" : ""}>
+                          <span className="text-xs font-black uppercase tracking-[0.16em] text-slate-500">
+                            {label}
+                          </span>
+                          <input
+                            type={type}
+                            value={areaHeadForm[key]}
+                            onChange={(event) =>
+                              setAreaHeadForm((current) => ({
+                                ...current,
+                                [key]: key === "sortOrder" ? Number(event.target.value) : event.target.value,
+                              }))
+                            }
+                            className="mt-2 h-11 w-full rounded-2xl border border-slate-200 bg-white px-3 text-sm font-bold text-slate-950 outline-none transition focus:border-blue-400"
+                          />
+                        </label>
+                      ))}
+                    </div>
+                    <button
+                      type="submit"
+                      disabled={isAreaHeadSaving || !selectedAreaHead}
+                      className="mt-5 inline-flex h-11 w-full items-center justify-center gap-2 rounded-2xl bg-blue-800 px-5 text-sm font-black text-white transition hover:bg-blue-950 disabled:opacity-60"
+                    >
+                      {isAreaHeadSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                      Save Area Head
+                    </button>
+                  </form>
+
+                  <form onSubmit={createAreaHead} className="rounded-3xl border border-slate-200 bg-white p-4">
+                    <p className="mb-4 text-xs font-black uppercase tracking-[0.18em] text-slate-500">
+                      Add Area Head
+                    </p>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      {([
+                        ["sortOrder", "Display Order", "number"],
+                        ["region", "Region", "text"],
+                        ["area", "Area", "text"],
+                        ["name", "Area Head", "text"],
+                        ["phone", "Phone", "tel"],
+                        ["email", "Email", "email"],
+                        ["address", "Address", "text"],
+                      ] as const).map(([key, label, type]) => (
+                        <label key={key} className={key === "address" ? "sm:col-span-2" : ""}>
+                          <span className="text-xs font-black uppercase tracking-[0.16em] text-slate-500">
+                            {label}
+                          </span>
+                          <input
+                            type={type}
+                            value={newAreaHeadForm[key]}
+                            onChange={(event) =>
+                              setNewAreaHeadForm((current) => ({
+                                ...current,
+                                [key]: key === "sortOrder" ? Number(event.target.value) : event.target.value,
+                              }))
+                            }
+                            className="mt-2 h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-3 text-sm font-bold text-slate-950 outline-none transition focus:border-blue-400 focus:bg-white"
+                          />
+                        </label>
+                      ))}
+                    </div>
+                    <button
+                      type="submit"
+                      disabled={isAreaHeadCreating}
+                      className="mt-5 inline-flex h-11 w-full items-center justify-center gap-2 rounded-2xl bg-slate-950 px-5 text-sm font-black text-white transition hover:bg-blue-950 disabled:opacity-60"
+                    >
+                      {isAreaHeadCreating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
+                      Add Area Head
+                    </button>
+                  </form>
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
               <div className="mb-5 flex items-center justify-between gap-4 border-b border-slate-100 pb-4">
                 <div>
                   <p className="text-xs font-black uppercase tracking-[0.2em] text-blue-800">
@@ -606,12 +983,15 @@ export function PersonnelAdminDashboard({
                     value={sourceQuery}
                     onChange={(event) => setSourceQuery(event.target.value)}
                     placeholder="Search source leader, district, area"
-                    className="mt-2 h-10 w-full border border-slate-200 bg-white px-3 text-sm font-bold outline-none transition focus:border-blue-400"
+                    className="mt-2 h-10 w-full rounded-2xl border border-slate-200 bg-white px-3 text-sm font-bold outline-none transition focus:border-blue-400"
                   />
                   <select
                     value={sourceId}
-                    onChange={(event) => setSourceId(Number(event.target.value))}
-                    className="mt-2 h-11 w-full border border-slate-200 bg-slate-50 px-3 text-sm font-bold outline-none focus:border-blue-400 focus:bg-white"
+                    onChange={(event) => {
+                      const person = personnel.find((item) => item.id === Number(event.target.value));
+                      if (person) selectTransferPerson("source", person);
+                    }}
+                    className="mt-2 h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-3 text-sm font-bold outline-none focus:border-blue-400 focus:bg-white"
                   >
                     {sourceOptions.map((person) => (
                       <option key={person.id} value={person.id}>
@@ -629,12 +1009,15 @@ export function PersonnelAdminDashboard({
                     value={targetQuery}
                     onChange={(event) => setTargetQuery(event.target.value)}
                     placeholder="Search target leader, district, area"
-                    className="mt-2 h-10 w-full border border-slate-200 bg-white px-3 text-sm font-bold outline-none transition focus:border-blue-400"
+                    className="mt-2 h-10 w-full rounded-2xl border border-slate-200 bg-white px-3 text-sm font-bold outline-none transition focus:border-blue-400"
                   />
                   <select
                     value={targetId}
-                    onChange={(event) => setTargetId(Number(event.target.value))}
-                    className="mt-2 h-11 w-full border border-slate-200 bg-slate-50 px-3 text-sm font-bold outline-none focus:border-blue-400 focus:bg-white"
+                    onChange={(event) => {
+                      const person = personnel.find((item) => item.id === Number(event.target.value));
+                      if (person) selectTransferPerson("target", person);
+                    }}
+                    className="mt-2 h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-3 text-sm font-bold outline-none focus:border-blue-400 focus:bg-white"
                   >
                     {targetOptions.map((person) => (
                       <option key={person.id} value={person.id}>
@@ -648,31 +1031,31 @@ export function PersonnelAdminDashboard({
                   <button
                     type="button"
                     onClick={() => setTransferMode("switch")}
-                    className={`h-12 border px-3 text-sm font-black transition ${transferMode === "switch" ? "border-blue-800 bg-blue-800 text-white" : "border-slate-200 bg-white text-slate-600"}`}
+                    className={`h-12 rounded-2xl border px-3 text-sm font-black transition ${transferMode === "switch" ? "border-blue-800 bg-blue-800 text-white" : "border-slate-200 bg-white text-slate-600"}`}
                   >
                     Switch
                   </button>
                   <button
                     type="button"
                     onClick={() => setTransferMode("direct")}
-                    className={`h-12 border px-3 text-sm font-black transition ${transferMode === "direct" ? "border-blue-800 bg-blue-800 text-white" : "border-slate-200 bg-white text-slate-600"}`}
+                    className={`h-12 rounded-2xl border px-3 text-sm font-black transition ${transferMode === "direct" ? "border-blue-800 bg-blue-800 text-white" : "border-slate-200 bg-white text-slate-600"}`}
                   >
                     Direct
                   </button>
                 </div>
 
-                <div className="border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
+                <div className="rounded-3xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
                   <div className="grid gap-3 sm:grid-cols-2">
                     <div>
                       <p className="text-xs font-black uppercase tracking-[0.16em] text-slate-400">
-                        Source
+                        From / Current
                       </p>
                       <p className="mt-1 font-black text-slate-950">{sourcePerson?.districtLeader}</p>
                       <p className="text-slate-500">{sourcePerson?.district}</p>
                     </div>
                     <div>
                       <p className="text-xs font-black uppercase tracking-[0.16em] text-slate-400">
-                        Target
+                        To / Destination
                       </p>
                       <p className="mt-1 font-black text-slate-950">{targetPerson?.districtLeader}</p>
                       <p className="text-slate-500">{targetPerson?.district}</p>
@@ -680,11 +1063,17 @@ export function PersonnelAdminDashboard({
                   </div>
                 </div>
 
+                <div className="rounded-2xl border border-yellow-100 bg-yellow-50 px-4 py-3 text-xs font-bold leading-5 text-slate-600">
+                  {transferMode === "switch"
+                    ? "Switch will exchange the two selected leaders between their current districts."
+                    : "Direct will move the From leader into the To district and mark the From district vacant."}
+                </div>
+
                 <button
                   type="button"
                   onClick={runTransfer}
                   disabled={isTransferring || sourceId === targetId}
-                  className="inline-flex h-12 items-center justify-center gap-2 bg-slate-950 px-5 text-sm font-black text-white transition hover:bg-blue-950 disabled:opacity-50"
+                  className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-slate-950 px-5 text-sm font-black text-white transition hover:bg-blue-950 disabled:opacity-50"
                 >
                   {isTransferring ? <Loader2 className="h-4 w-4 animate-spin" /> : <Shuffle className="h-4 w-4" />}
                   Apply Transfer
@@ -692,7 +1081,7 @@ export function PersonnelAdminDashboard({
               </div>
             </div>
 
-            <div className="bg-white p-5 shadow-sm ring-1 ring-slate-200">
+            <div className="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
               <div className="mb-5 flex items-center justify-between gap-4 border-b border-slate-100 pb-4">
                 <div>
                   <p className="text-xs font-black uppercase tracking-[0.2em] text-blue-800">
@@ -712,12 +1101,12 @@ export function PersonnelAdminDashboard({
                     value={areaSourceQuery}
                     onChange={(event) => setAreaSourceQuery(event.target.value)}
                     placeholder="Search area or area head"
-                    className="mt-2 h-10 w-full border border-slate-200 bg-white px-3 text-sm font-bold outline-none transition focus:border-blue-400"
+                    className="mt-2 h-10 w-full rounded-2xl border border-slate-200 bg-white px-3 text-sm font-bold outline-none transition focus:border-blue-400"
                   />
                   <select
                     value={areaSource}
                     onChange={(event) => setAreaSource(event.target.value)}
-                    className="mt-2 h-11 w-full border border-slate-200 bg-slate-50 px-3 text-sm font-bold outline-none focus:border-blue-400 focus:bg-white"
+                    className="mt-2 h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-3 text-sm font-bold outline-none focus:border-blue-400 focus:bg-white"
                   >
                     {areaSourceOptions.map((area) => (
                       <option key={area.area} value={area.area}>
@@ -735,12 +1124,12 @@ export function PersonnelAdminDashboard({
                     value={areaTargetQuery}
                     onChange={(event) => setAreaTargetQuery(event.target.value)}
                     placeholder="Search target area or area head"
-                    className="mt-2 h-10 w-full border border-slate-200 bg-white px-3 text-sm font-bold outline-none transition focus:border-blue-400"
+                    className="mt-2 h-10 w-full rounded-2xl border border-slate-200 bg-white px-3 text-sm font-bold outline-none transition focus:border-blue-400"
                   />
                   <select
                     value={areaTarget}
                     onChange={(event) => setAreaTarget(event.target.value)}
-                    className="mt-2 h-11 w-full border border-slate-200 bg-slate-50 px-3 text-sm font-bold outline-none focus:border-blue-400 focus:bg-white"
+                    className="mt-2 h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-3 text-sm font-bold outline-none focus:border-blue-400 focus:bg-white"
                   >
                     {areaTargetOptions.map((area) => (
                       <option key={area.area} value={area.area}>
@@ -754,20 +1143,20 @@ export function PersonnelAdminDashboard({
                   <button
                     type="button"
                     onClick={() => setAreaTransferMode("switch")}
-                    className={`h-12 border px-3 text-sm font-black transition ${areaTransferMode === "switch" ? "border-blue-800 bg-blue-800 text-white" : "border-slate-200 bg-white text-slate-600"}`}
+                    className={`h-12 rounded-2xl border px-3 text-sm font-black transition ${areaTransferMode === "switch" ? "border-blue-800 bg-blue-800 text-white" : "border-slate-200 bg-white text-slate-600"}`}
                   >
                     Switch
                   </button>
                   <button
                     type="button"
                     onClick={() => setAreaTransferMode("direct")}
-                    className={`h-12 border px-3 text-sm font-black transition ${areaTransferMode === "direct" ? "border-blue-800 bg-blue-800 text-white" : "border-slate-200 bg-white text-slate-600"}`}
+                    className={`h-12 rounded-2xl border px-3 text-sm font-black transition ${areaTransferMode === "direct" ? "border-blue-800 bg-blue-800 text-white" : "border-slate-200 bg-white text-slate-600"}`}
                   >
                     Direct
                   </button>
                 </div>
 
-                <div className="border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
+                <div className="rounded-3xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
                   <div className="grid gap-3 sm:grid-cols-2">
                     <div>
                       <p className="text-xs font-black uppercase tracking-[0.16em] text-slate-400">
@@ -790,7 +1179,7 @@ export function PersonnelAdminDashboard({
                   type="button"
                   onClick={runAreaTransfer}
                   disabled={isAreaTransferring || areaSource === areaTarget}
-                  className="inline-flex h-12 items-center justify-center gap-2 bg-slate-950 px-5 text-sm font-black text-white transition hover:bg-blue-950 disabled:opacity-50"
+                  className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-slate-950 px-5 text-sm font-black text-white transition hover:bg-blue-950 disabled:opacity-50"
                 >
                   {isAreaTransferring ? <Loader2 className="h-4 w-4 animate-spin" /> : <Shuffle className="h-4 w-4" />}
                   Apply Area Head Transfer
@@ -799,7 +1188,7 @@ export function PersonnelAdminDashboard({
             </div>
 
             {(message || error) && (
-              <div className={`flex items-center gap-3 px-4 py-3 text-sm font-black ${error ? "bg-red-50 text-red-700 ring-1 ring-red-100" : "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100"}`}>
+              <div className={`flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-black ${error ? "bg-red-50 text-red-700 ring-1 ring-red-100" : "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100"}`}>
                 <CheckCircle2 className="h-5 w-5" />
                 {error || message}
               </div>

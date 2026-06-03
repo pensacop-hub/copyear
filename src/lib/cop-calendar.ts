@@ -17,7 +17,7 @@ if (!process.env.DATABASE_URL) {
         }
       }
     }
-  } catch (err) {
+  } catch {
     // ignore
   }
 }

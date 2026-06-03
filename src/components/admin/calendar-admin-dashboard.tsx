@@ -154,9 +154,9 @@ export function CalendarAdminDashboard({ initialEvents, embedded = false }: Cale
         </div>}
 
         <div className="mt-8 grid gap-6 xl:grid-cols-[1fr_0.8fr]">
-          <div className="bg-white shadow-sm ring-1 ring-slate-200">
+          <div className="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-slate-200">
             <div className="border-b border-slate-100 p-4">
-              <div className="flex h-12 items-center gap-3 border border-slate-200 bg-slate-50 px-4">
+              <div className="flex h-12 items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4">
                 <Search className="h-5 w-5 text-blue-800" />
                 <input
                   value={query}

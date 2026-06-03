@@ -5,28 +5,25 @@ type RouteContext = {
   params: Promise<{ id: string }>;
 };
 
-const fields: Array<keyof CopPersonnelInput> = [
-  "region",
-  "area",
-  "areaLeader",
-  "district",
-  "districtLeader",
-  "phone",
-  "email",
-  "address",
-];
-
 function cleanInput(value: unknown): CopPersonnelInput {
   if (!value || typeof value !== "object") {
     throw new Error("Invalid personnel payload.");
   }
 
   const record = value as Record<string, unknown>;
-  const input = Object.fromEntries(
-    fields.map((field) => [field, String(record[field] ?? "").trim()]),
-  ) as CopPersonnelInput;
+  const input: CopPersonnelInput = {
+    sortOrder: Number(record.sortOrder ?? 0),
+    region: String(record.region ?? "").trim(),
+    area: String(record.area ?? "").trim(),
+    areaLeader: String(record.areaLeader ?? "").trim(),
+    district: String(record.district ?? "").trim(),
+    districtLeader: String(record.districtLeader ?? "").trim(),
+    phone: String(record.phone ?? "").trim(),
+    email: String(record.email ?? "").trim(),
+    address: String(record.address ?? "").trim(),
+  };
 
-  for (const field of fields.slice(0, 5)) {
+  for (const field of ["region", "area", "areaLeader", "district", "districtLeader"] as const) {
     if (!input[field]) {
       throw new Error(`${field} is required.`);
     }

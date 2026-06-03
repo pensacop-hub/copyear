@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { InstallBanner } from "@/components/pwa/install-banner";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -15,9 +16,21 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "The Church of Pentecost Year",
   description: "Official portal for church activities and personnel",
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "COP Year",
+  },
+  applicationName: "COP Year",
   icons: {
     icon: "/cop.png",
+    apple: "/cop.png",
   },
+};
+
+export const viewport = {
+  themeColor: "#1e40af",
 };
 
 export default function RootLayout({
@@ -32,6 +45,7 @@ export default function RootLayout({
     >
       <body className="min-h-screen flex flex-col justify-between overflow-x-hidden">
         <main className="flex-1">{children}</main>
+        <InstallBanner />
 
         <footer className="bg-slate-50 border-t border-slate-100 py-6 text-center">
           <div className="max-w-4xl mx-auto px-4">

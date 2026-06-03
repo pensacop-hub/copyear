@@ -6,15 +6,16 @@ import Link from "next/link";
 import { CalendarDays, Users } from "lucide-react";
 import { PersonnelAdminDashboard } from "@/components/admin/personnel-admin-dashboard";
 import { CalendarAdminDashboard } from "@/components/admin/calendar-admin-dashboard";
-import type { CopPersonnel } from "@/lib/cop-personnel";
+import type { CopAreaHead, CopPersonnel } from "@/lib/cop-personnel";
 import type { CopCalendarEvent } from "@/lib/cop-calendar";
 
 type UnifiedAdminCmsProps = {
   personnel: CopPersonnel[];
+  areaHeads: CopAreaHead[];
   events: CopCalendarEvent[];
 };
 
-export function UnifiedAdminCms({ personnel, events }: UnifiedAdminCmsProps) {
+export function UnifiedAdminCms({ personnel, areaHeads, events }: UnifiedAdminCmsProps) {
   const [section, setSection] = useState<"personnel" | "calendar">("personnel");
 
   return (
@@ -61,7 +62,7 @@ export function UnifiedAdminCms({ personnel, events }: UnifiedAdminCmsProps) {
 
         <div className="mt-8">
           {section === "personnel" ? (
-            <PersonnelAdminDashboard initialPersonnel={personnel} embedded />
+            <PersonnelAdminDashboard initialPersonnel={personnel} initialAreaHeads={areaHeads} embedded />
           ) : (
             <CalendarAdminDashboard initialEvents={events} embedded />
           )}

@@ -173,15 +173,16 @@ export const EventHero = () => {
 
   return (
     <div className="relative bg-slate-50 overflow-hidden mb-[-15vh] md:mb-[-25vh]">
+      <div className="pointer-events-none absolute inset-x-4 top-24 z-[45] h-72 rounded-[2rem] bg-slate-50/85 blur-xl md:hidden" />
       <ContainerStagger className="relative z-[50] flex flex-col items-center pt-32 md:pt-64 pb-2 px-6 text-center">
         <ContainerAnimated>
-          <h1 className="text-4xl md:text-8xl font-black text-[#0F172A] tracking-tighter leading-[1.1] md:leading-[0.9] mb-4">
+          <h1 className="text-4xl md:text-8xl font-black text-[#0F172A] tracking-normal leading-[1.1] md:leading-[0.9] mb-4">
             {new Date().getFullYear()} <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-blue-800 to-blue-900">Global Activities</span>
           </h1>
         </ContainerAnimated>
         <ContainerAnimated className="max-w-2xl my-4 md:my-6">
-          <p className="text-slate-500 text-base md:text-xl font-medium leading-relaxed">
+          <p className="text-slate-700 md:text-slate-500 text-base md:text-xl font-semibold md:font-medium leading-relaxed">
             Witness the move of God through our various events and spiritual
             activities as we navigate this year of divine impact together.
           </p>

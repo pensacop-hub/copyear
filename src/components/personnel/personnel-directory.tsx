@@ -126,7 +126,7 @@ export function PersonnelDirectory({ personnel }: PersonnelDirectoryProps) {
           </div>
         </div>
 
-        <div className="sticky top-4 z-40 mt-7 rounded-[1.75rem] border border-slate-200 bg-white/90 p-2 shadow-2xl shadow-blue-950/10 backdrop-blur">
+        <div className="sticky top-28 z-40 mt-7 rounded-[1.75rem] border border-slate-200 bg-white/90 p-2 shadow-2xl shadow-blue-950/10 backdrop-blur md:top-24">
           <div className="flex min-h-14 items-center gap-3 rounded-[1.35rem] bg-slate-50 px-3 ring-1 ring-inset ring-slate-100">
             <div className="flex h-10 w-10 flex-none items-center justify-center rounded-2xl bg-blue-800 text-white shadow-lg shadow-blue-900/20">
               <Search className="h-5 w-5" />
