@@ -1,6 +1,27 @@
 import "server-only";
 
-import calendarData from "@/data/cop-calendar-events.json";
+import fs from "fs";
+import path from "path";
+
+if (!process.env.DATABASE_URL) {
+  try {
+    const envPath = path.resolve(process.cwd(), ".env.local");
+    if (fs.existsSync(envPath)) {
+      const content = fs.readFileSync(envPath, "utf8");
+      for (const line of content.split(/\r?\n/)) {
+        const m = line.match(/^\s*([A-Za-z0-9_.-]+)\s*=\s*(?:"([^"]*)"|'([^']*)'|(.*))\s*$/);
+        if (m) {
+          const key = m[1];
+          const value = m[2] ?? m[3] ?? m[4] ?? "";
+          if (!process.env[key]) process.env[key] = value;
+        }
+      }
+    }
+  } catch (err) {
+    // ignore
+  }
+}
+
 import { getCopPersonnelPool } from "@/lib/cop-personnel";
 
 export type CopCalendarEvent = {
@@ -27,9 +48,6 @@ type DbCalendarEvent = {
   sort_order: number;
 };
 
-const fallbackEvents = (calendarData as Array<Omit<CopCalendarEvent, "sortOrder">>).map(
-  (event, index) => ({ ...event, sortOrder: index + 1 }),
-);
 
 function toDateString(value: string | Date) {
   if (value instanceof Date) {
@@ -54,20 +72,15 @@ function fromDb(row: DbCalendarEvent): CopCalendarEvent {
 
 export async function getCopCalendarEvents(): Promise<CopCalendarEvent[]> {
   const db = getCopPersonnelPool();
-
   if (!db) {
-    return fallbackEvents;
+    throw new Error("DATABASE_URL is required to fetch COP calendar events.");
   }
 
-  try {
-    const result = await db.query<DbCalendarEvent>(
-      "select id, title, start_date, end_date, category, color, description, sort_order from public.cop_calendar_events order by sort_order asc, start_date asc",
-    );
-    return result.rows.map(fromDb);
-  } catch (error) {
-    console.warn("Falling back to local COP calendar data.", error);
-    return fallbackEvents;
-  }
+  const result = await db.query<DbCalendarEvent>(
+    "select id, title, start_date, end_date, category, color, description, sort_order from public.cop_calendar_events order by sort_order asc, start_date asc",
+  );
+
+  return result.rows.map(fromDb);
 }
 
 export async function updateCopCalendarEvent(id: number, input: CopCalendarEventInput) {

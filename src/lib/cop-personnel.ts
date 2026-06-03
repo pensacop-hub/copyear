@@ -1,7 +1,8 @@
 import "server-only";
 
+import fs from "fs";
+import path from "path";
 import pg from "pg";
-import personnelData from "@/data/cop-personnel.json";
 
 export type CopPersonnel = {
   id: number;
@@ -33,13 +34,30 @@ type DbPersonnel = {
   address: string | null;
 };
 
-const fallbackPersonnel = personnelData as CopPersonnel[];
 
 let pool: pg.Pool | undefined;
 
 type Queryable = Pick<pg.Pool, "query"> | Pick<pg.PoolClient, "query">;
 
 export function getCopPersonnelPool() {
+  if (!process.env.DATABASE_URL) {
+    try {
+      const envPath = path.resolve(process.cwd(), ".env.local");
+      if (fs.existsSync(envPath)) {
+        const content = fs.readFileSync(envPath, "utf8");
+        for (const line of content.split(/\r?\n/)) {
+          const m = line.match(/^\s*([A-Za-z0-9_.-]+)\s*=\s*(?:"([^"]*)"|'([^']*)'|(.*))\s*$/);
+          if (m) {
+            const key = m[1];
+            const value = m[2] ?? m[3] ?? m[4] ?? "";
+            if (!process.env[key]) process.env[key] = value;
+          }
+        }
+      }
+    } catch (err) {
+    }
+  }
+
   if (!process.env.DATABASE_URL) {
     return undefined;
   }
@@ -105,7 +123,7 @@ export async function getCopPersonnel(): Promise<CopPersonnel[]> {
   const db = getCopPersonnelPool();
 
   if (!db) {
-    return fallbackPersonnel;
+    throw new Error("DATABASE_URL is required to fetch COP personnel.");
   }
 
   try {
@@ -114,34 +132,35 @@ export async function getCopPersonnel(): Promise<CopPersonnel[]> {
     );
     return result.rows.map(fromDb);
   } catch (error) {
-    console.warn("Falling back to local COP personnel data.", error);
-    return fallbackPersonnel;
+    console.error("Error fetching COP personnel from DB.", error);
+    throw error;
   }
 }
 
 export async function getCopPersonBySlug(slug: string) {
   const db = getCopPersonnelPool();
-
-  if (db) {
-    try {
-      const result = await db.query<DbPersonnel>(
-        'select id, slug, sort_order, region, area, area_leader, district, district_leader, phone, email, address from public."cop personnel" where slug = $1 limit 1',
-        [slug],
-      );
-
-      if (result.rows[0]) {
-        return fromDb(result.rows[0]);
-      }
-    } catch (error) {
-      console.warn("Falling back to local COP personnel detail data.", error);
-    }
+  if (!db) {
+    throw new Error("DATABASE_URL is required to fetch COP personnel.");
   }
 
-  return fallbackPersonnel.find((person) => person.slug === slug) ?? null;
+  try {
+    const result = await db.query<DbPersonnel>(
+      'select id, slug, sort_order, region, area, area_leader, district, district_leader, phone, email, address from public."cop personnel" where slug = $1 limit 1',
+      [slug],
+    );
+
+    if (result.rows[0]) {
+      return fromDb(result.rows[0]);
+    }
+
+    return null;
+  } catch (error) {
+    throw error;
+  }
 }
 
 export function getFallbackCopPersonnel() {
-  return fallbackPersonnel;
+  throw new Error("Fallback personnel data removed; DATABASE_URL is required.");
 }
 
 export async function updateCopPerson(id: number, input: CopPersonnelInput) {
