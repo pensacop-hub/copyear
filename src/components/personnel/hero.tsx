@@ -65,7 +65,6 @@ export function Hero() {
               >
                 <div className="w-[220px] h-[220px] sm:w-[260px] sm:h-[260px] md:w-[440px] md:h-[440px] rounded-full bg-gradient-to-br from-blue-500 via-blue-700 to-blue-900 p-[2px] md:p-[3px] flex items-center justify-center relative shadow-2xl">
                   <div className="w-full h-full rounded-full bg-white flex items-center justify-center relative shadow-[inset_0_0_50px_rgba(0,0,0,0.05)]">
-
                     {apostles.map((member, index) => {
                       const angle = (2 * Math.PI) / 15 * index - Math.PI / 2; // Offset by -90deg
 
@@ -81,10 +80,12 @@ export function Hero() {
                             onClick={() => setSelectedApostle(member)}
                             className="w-10 h-10 sm:w-12 sm:h-12 md:w-20 md:h-20 rounded-full overflow-hidden border-[2px] md:border-4 border-white shadow-lg md:shadow-xl bg-slate-100 hover:scale-110 focus:scale-110 outline-none transition-transform cursor-pointer relative group z-10"
                           >
-                            <img
+                            <Image
                               src={member.src}
                               alt={member.name}
-                              className="w-full h-full object-cover"
+                              fill
+                              sizes="(min-width: 768px) 80px, 48px"
+                              className="object-cover"
                             />
                             <div className="absolute inset-0 bg-blue-900/0 group-hover:bg-blue-900/20 transition-colors" />
                           </button>
@@ -93,17 +94,18 @@ export function Hero() {
                     })}
 
                     <div
-                      style={{ 
-                        opacity: animationProgress, 
-                        transform: `scale(${0.95 + (animationProgress * 0.05)}) translateY(${(1 - animationProgress) * 20}px)` 
+                      style={{
+                        opacity: animationProgress,
+                        transform: `scale(${0.95 + (animationProgress * 0.05)}) translateY(${(1 - animationProgress) * 20}px)`
                       }}
                       className="flex flex-col items-center justify-center relative z-20 px-4 md:px-8 max-w-[160px] md:max-w-[350px]"
                     >
                       <div className="relative w-10 h-10 md:w-20 md:h-20 mb-4 md:mb-8 shadow-2xl">
-                        <Image 
-                          src="/cop.png" 
-                          alt="COP Logo" 
-                          fill 
+                        <Image
+                          src="/cop.png"
+                          alt="COP Logo"
+                          fill
+                          sizes="(min-width: 768px) 80px, 40px"
                           className="object-contain"
                         />
                       </div>
@@ -160,10 +162,12 @@ export function Hero() {
               </button>
 
               <div className="w-full aspect-square rounded-[1.5rem] overflow-hidden mb-5 bg-slate-100 relative">
-                <img
+                <Image
                   src={selectedApostle.src}
                   alt={selectedApostle.name}
-                  className="w-full h-full object-cover"
+                  fill
+                  sizes="(min-width: 768px) 448px, calc(100vw - 56px)"
+                  className="object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-blue-950/60 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300" />
               </div>
@@ -184,10 +188,16 @@ export function Hero() {
                         e.stopPropagation();
                         setSelectedApostle(apostle);
                       }}
-                      className={`flex-shrink-0 w-12 h-12 rounded-xl overflow-hidden border-2 transition-all snap-center ${selectedApostle?.name === apostle.name ? 'border-yellow-400 scale-110 shadow-lg' : 'border-transparent opacity-40 hover:opacity-100'
+                      className={`relative flex-shrink-0 w-12 h-12 rounded-xl overflow-hidden border-2 transition-all snap-center ${selectedApostle?.name === apostle.name ? 'border-yellow-400 scale-110 shadow-lg' : 'border-transparent opacity-40 hover:opacity-100'
                         }`}
                     >
-                      <img src={apostle.src} alt={apostle.name} className="w-full h-full object-cover" />
+                      <Image
+                        src={apostle.src}
+                        alt={apostle.name}
+                        fill
+                        sizes="48px"
+                        className="object-cover"
+                      />
                     </button>
                   ))}
                 </div>

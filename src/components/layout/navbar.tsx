@@ -5,13 +5,12 @@ import { motion } from "framer-motion";
 import { Home, Users, ChevronDown } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 
 export function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const pathname = usePathname();
-  const router = useRouter();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -69,6 +68,7 @@ export function Navbar() {
                 src="/cop.png"
                 alt="COP Logo"
                 fill
+                sizes={showVertical ? "40px" : "32px"}
                 className="object-contain"
               />
             </motion.div>

@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import {
   HTMLMotionProps,
   MotionValue,
+  type Transition,
   Variants,
   motion,
   useScroll,
@@ -80,7 +81,7 @@ interface ContainerScrollContextValue {
 
 const SPRING_CONFIG = {
   type: "spring", stiffness: 100, damping: 16, mass: 0.75, restDelta: 0.005, duration: 0.3
-} as any;
+} as const satisfies Transition;
 
 const blurVariants: Variants = {
   hidden: { filter: "blur(10px)", opacity: 0 },
@@ -159,7 +160,7 @@ ContainerStagger.displayName = "ContainerStagger"
 
 const ContainerAnimated = React.forwardRef<HTMLDivElement, HTMLMotionProps<"div">>(({ className, transition, ...props }, ref) => {
   return (
-    <motion.div ref={ref} className={cn(className)} variants={blurVariants} transition={SPRING_CONFIG || transition} {...props} />
+    <motion.div ref={ref} className={cn(className)} variants={blurVariants} transition={transition ?? SPRING_CONFIG} {...props} />
   )
 })
 ContainerAnimated.displayName = "ContainerAnimated"

@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Calendar as CalendarIcon, Clock, MapPin } from "lucide-react";
+import { X, Clock, MapPin } from "lucide-react";
 import { format, parseISO } from "date-fns";
 
 import Image from "next/image";
@@ -12,6 +12,7 @@ interface Event {
   start: string;
   end: string;
   category: string;
+  description: string;
 }
 
 interface ScheduleModalProps {
@@ -69,6 +70,7 @@ export function ScheduleModal({ isOpen, onClose, events }: ScheduleModalProps) {
                   src="/cop.png" 
                   alt="COP Logo" 
                   fill 
+                  sizes="48px"
                   className="object-contain"
                 />
               </div>
@@ -86,7 +88,7 @@ export function ScheduleModal({ isOpen, onClose, events }: ScheduleModalProps) {
           </div>
 
           <div className="relative z-10">
-            {sortedEvents.map((event, i) => (
+            {sortedEvents.map((event) => (
               <section
                 key={event.id}
                 className="min-h-screen flex items-center justify-center px-8 md:px-24 py-32 border-b border-slate-50 relative overflow-hidden"
@@ -141,7 +143,7 @@ export function ScheduleModal({ isOpen, onClose, events }: ScheduleModalProps) {
 
                     <p className="text-slate-500 text-lg md:text-2xl font-medium leading-relaxed max-w-2xl mb-16">
                       <Typewriter
-                        text={`Join the Global Pentecost Family for this ${event.category.toLowerCase()}. A time of deep spiritual reflection and divine empowerment at The Church of Pentecost.`}
+                        text={event.description || `Join the Global Pentecost Family for this ${event.category.toLowerCase()}. A time of deep spiritual reflection and divine empowerment at The Church of Pentecost.`}
                         delay={1}
                         className="inline-block"
                       />

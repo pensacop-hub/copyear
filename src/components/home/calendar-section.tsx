@@ -2,32 +2,16 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Users, Sparkles, Clock } from "lucide-react";
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Clock } from "lucide-react";
 import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, isWithinInterval, startOfDay, parseISO, startOfWeek, endOfWeek } from "date-fns";
 import { ScheduleModal } from "./schedule-modal";
+import type { CopCalendarEvent } from "@/lib/cop-calendar";
 
-const EVENTS = [
-  { id: 1, title: 'PENSA GHANA CONFERENCE - PCC', start: '2026-01-01', end: '2026-01-04', category: 'Conference', color: 'blue' },
-  { id: 2, title: "GLOBAL ALL MINISTERS' AND WIVES' CONFERENCE", start: '2026-01-20', end: '2026-01-23', category: 'Conference', color: 'blue' },
-  { id: 3, title: 'BIBLE AWARENESS WEEK', start: '2026-03-03', end: '2026-03-08', category: 'Awareness', color: 'yellow' },
-  { id: 4, title: 'EXECUTIVE COUNCIL SESSION 1', start: '2026-03-17', end: '2026-03-21', category: 'Council', color: 'slate' },
-  { id: 5, title: 'EASTER CONVENTIONS', start: '2026-04-02', end: '2026-04-05', category: 'Convention', color: 'blue' },
-  { id: 6, title: 'EXECUTIVE COUNCIL SESSION 2', start: '2026-04-13', end: '2026-04-19', category: 'Council', color: 'slate' },
-  { id: 7, title: 'GENERAL COUNCIL MEETINGS', start: '2026-04-22', end: '2026-04-24', category: 'Council', color: 'slate' },
-  { id: 8, title: "WOMEN'S MINISTRY WEEK-LONG ACTIVITIES", start: '2026-05-04', end: '2026-05-10', category: 'Ministry', color: 'yellow' },
-  { id: 9, title: 'PENTECOST WEEK', start: '2026-05-19', end: '2026-05-24', category: 'Week', color: 'blue' },
-  { id: 10, title: 'PEMEM WEEK-LONG ACTIVITIES', start: '2026-06-16', end: '2026-06-21', category: 'Ministry', color: 'yellow' },
-  { id: 11, title: 'PENTSOS AWARENESS WEEKEND', start: '2026-08-14', end: '2026-08-16', category: 'Awareness', color: 'blue' },
-  { id: 12, title: "CHILDREN'S MINISTRY WEEK-LONG ACTIVITIES", start: '2026-09-08', end: '2026-09-13', category: 'Ministry', color: 'yellow' },
-  { id: 13, title: "YOUTH MINISTRY WEEK-LONG ACTIVITIES", start: '2026-09-22', end: '2026-09-27', category: 'Ministry', color: 'yellow' },
-  { id: 14, title: 'GPCC WEEK', start: '2026-10-06', end: '2026-10-10', category: 'Week', color: 'slate' },
-  { id: 15, title: 'OUTREACH DAY', start: '2026-10-11', end: '2026-10-11', category: 'Outreach', color: 'blue' },
-  { id: 16, title: "HEADS' PRAYER SESSION", start: '2026-11-09', end: '2026-11-15', category: 'Prayer', color: 'slate' },
-  { id: 17, title: 'HEAD OFFICE MANAGEMENT AND STAFF RETREAT', start: '2026-12-09', end: '2026-12-11', category: 'Retreat', color: 'yellow' },
-  { id: 18, title: 'CHRISTMAS CONVENTION', start: '2026-12-24', end: '2026-12-27', category: 'Convention', color: 'blue' },
-];
+type CalendarSectionProps = {
+  events: CopCalendarEvent[];
+};
 
-export function CalendarSection() {
+export function CalendarSection({ events }: CalendarSectionProps) {
   const [currentMonth, setCurrentMonth] = useState(new Date(new Date().getFullYear(), 0, 1));
   const [selectedDay, setSelectedDay] = useState<Date | null>(null);
   const [isScheduleOpen, setIsScheduleOpen] = useState(false);
@@ -42,7 +26,7 @@ export function CalendarSection() {
   const daysInMonth = eachDayOfInterval({ start: startDate, end: endDate });
 
   const getEventsForDay = (day: Date) => {
-    return EVENTS.filter(event => {
+    return events.filter(event => {
       const start = parseISO(event.start);
       const end = parseISO(event.end);
       return isWithinInterval(startOfDay(day), { start: startOfDay(start), end: startOfDay(end) });
@@ -214,7 +198,7 @@ export function CalendarSection() {
                 </div>
 
                 <div className="space-y-6 flex-1">
-                  {EVENTS.filter(e => parseISO(e.start) > startOfDay(new Date())).slice(0, 2).map((event, i) => (
+                  {events.filter(e => parseISO(e.start) > startOfDay(new Date())).slice(0, 2).map((event, i) => (
                     <motion.div
                       key={event.id}
                       initial={{ opacity: 0, y: 20 }}
@@ -255,7 +239,7 @@ export function CalendarSection() {
       <ScheduleModal
         isOpen={isScheduleOpen}
         onClose={() => setIsScheduleOpen(false)}
-        events={EVENTS}
+        events={events}
       />
     </>
   );
